@@ -1,0 +1,78 @@
+# Name for your workflow, which will be displayed on GitHub
+name: Node.js and React CI
+
+# Controls when the workflow will run
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This is the job for the Node.js backend
+  build-backend:
+    # The type of virtual machine to run the job on. 'ubuntu-latest' is a standard choice.
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Step 1: 'actions/checkout@v4' is a pre-built action that checks out your repository code.
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Step 2: 'actions/setup-node@v4' sets up a specific version of Node.js for you to use.
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          # This line caches npm dependencies to speed up future builds
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+
+      # Step 3: Installs project dependencies. 'npm ci' is used for continuous integration
+      # because it's faster and uses the package-lock.json file for exact versions.
+      - name: Install Backend Dependencies
+        # 'working-directory' tells the command to run inside the '/server' folder.
+        working-directory: ./server
+        run: npm ci
+
+      # Step 4 (Optional but Recommended): Run tests defined in your package.json.
+      - name: Run Backend Tests
+        working-directory: ./server
+        run: npm test
+
+  # This is the job for the React.js frontend
+  build-frontend:
+    # It also runs on the latest version of Ubuntu
+    runs-on: ubuntu-latest
+
+    # Steps for the frontend job
+    steps:
+      # Step 1: Checkout the code (same as before)
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Step 2: Setup Node.js (same as before)
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+
+      # Step 3: Install dependencies for the frontend
+      - name: Install Frontend Dependencies
+        working-directory: ./client
+        run: npm ci
+
+      # Step 4 (Optional but Recommended): Run tests for the frontend
+      - name: Run Frontend Tests
+        working-directory: ./client
+        run: npm test
+
+      # Step 5: Create a production build of the React app. This is a great way
+      # to catch errors that might only appear during the build process.
+      - name: Build Frontend
+        working-directory: ./client
+        run: npm run build

@@ -1,0 +1,10 @@
+# Dependencies
+/node_modules
+/client/node_modules
+/server/node_modules
+
+# Build folder from React app
+/client/build
+
+# Environment variables
+.env
